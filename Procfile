@@ -1,0 +1,1 @@
+discord-bbot: python "main.py"
