@@ -12,15 +12,16 @@ musics: list = []
 help_text = '''
 Bot commands:
 
-🎶-p [url] -> Tocar a musica/video
-😁-join -> entra no canal atual da pessoa que chamou o comando
-🤓-disconnect -> desconecta do canal atual
-🔊-volume [0-1000] -> Altera o volume de saida
-⏯-pr -> Pausa de estiver tocando, se estiver pausado ele volta a tocar
-⏹-stop -> Para de tocar a musica/video e desconecta do canal
-📃-list -> Mostra a lista de musicas/videos atuais
-⏩-skip -> Toca a proxima musica/video na playlist
-♾-loop -> L∞P
+🎶 - p [url/name]            | Play the music/video
+😁 - join                              | Join in the current channel
+🤓 - disconnect                | Disconnect from the current channel
+🔊 - volume [0-1000]    | Change the output volume
+⏯ - pr                                | Toggle between paused and playing
+⏹ - stop                            | Stop the current track and disconnect
+📃 - list                              | Show the playlist
+⏩ - skip                            | Play the next music/video
+♾ - loop                            | L∞P
+😎 - festourado                | FOOOOOOOOOOOOOOOORGET
 '''
 
 is_loop = False
@@ -35,9 +36,13 @@ class music(commands.Cog):
     async def join(self, ctx):
         if ctx.author.voice is None:
             await ctx.send("You're not in a voice channel!")
+
         voice_channel = ctx.author.voice.channel
+
         if ctx.voice_client is None:
             await voice_channel.connect()
+            if musics != 0:
+                await play(self, ctx, musics[0])
         else:
             await ctx.voice_client.move_to(voice_channel)
 
@@ -46,21 +51,21 @@ class music(commands.Cog):
         if ctx.voice_client is None:
             await ctx.send("I'm not in a voice channel")
         else:
+            ctx.voice_client.stop()
             await ctx.voice_client.disconnect()
 
     @commands.command()
     async def p(self, ctx: commands.Context, *, text):
+        if ctx.voice_client is None:
+            await ctx.author.voice.channel.connect()
 
         data = await YTDLSource.get_info(text)
         musics.append(data)
 
-        if ctx.voice_client is None:
-            await ctx.author.voice.channel.connect()
-
         if not ctx.voice_client.is_playing() and len(musics) == 1:
             await play(self, ctx, musics[0])
         else:
-            await ctx.send(f'Added to the list!')
+            await ctx.send(f'{data.get("title")} | Added to the list!')
 
     @commands.command()
     async def pr(self, ctx):
@@ -82,10 +87,13 @@ class music(commands.Cog):
     @commands.command()
     async def volume(self, ctx, volume: int = 50):
         if ctx.voice_client is None:
-            return await ctx.send("Not connected to a voice channel.")
+            return await ctx.send("I'm not in a voice channel!")
         else:
-            ctx.voice_client.source.volume = volume / 100
-            await ctx.send(f'Changed volume to {volume}%')
+            if ctx.voice_client.is_playing() and len(musics) != 0:
+                ctx.voice_client.source.volume = volume / 100
+                await ctx.send(f'Changed volume to {volume}%')
+            else:
+                await ctx.send("There's no music playing ;(")
 
     @commands.command()
     async def stop(self, ctx):
@@ -128,8 +136,11 @@ class music(commands.Cog):
         if ctx.voice_client is None:
             await ctx.send("Not connected to a voice channel.")
         else:
-            ctx.voice_client.source.volume = 10000 / 100
-            await ctx.send(f'Forget estourado 🤏😎🤏😎')
+            if ctx.voice_client.is_playing() and len(musics) != 0:
+                ctx.voice_client.source.volume = 10000 / 100
+                await ctx.send(f'Forget estourado 🤏😎🤏😎')
+            else:
+                await ctx.send("There's no music playing ;(")
 
     @commands.command()
     async def loop(self, ctx):
