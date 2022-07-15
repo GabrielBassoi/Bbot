@@ -32,6 +32,20 @@ class music(commands.Cog):
     def __init__(self, client):
         self.client = client
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        voice = after.channel.guild.voice_client
+        time = 0
+        while True:
+            await asyncio.sleep(1)
+            time = time + 1
+            if voice.is_playing() and not voice.is_paused():
+                time = 0
+            if time == 300:
+                await voice.disconnect()
+            if not voice.is_connected():
+                break
+
     @commands.command()
     async def join(self, ctx):
         if ctx.author.voice is None:
