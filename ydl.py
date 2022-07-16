@@ -67,8 +67,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
     def init_player(cls, data, stream=False):
         try:
             filename = data['url'] if stream else ytdl.prepare_filename(data)
-            return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+            return cls(discord.FFmpegPCMAudio(filename, executable=ffmpegPath,**ffmpeg_options), data=data)
         except:
             print("Ocorreu um erro")
 
-'''executable=ffmpegPath,''' # With in pc put on return cls(... , with send to heroku remove
+'''''' # With in pc put on return cls(... , with send to heroku remove

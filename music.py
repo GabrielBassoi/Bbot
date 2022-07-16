@@ -14,7 +14,7 @@ Bot commands:
 
 🎶 - p [url/name]            | Play the music/video
 😁 - join                              | Join in the current channel
-🤓 - disconnect                | Disconnect from the current channel
+😥 - disconnect                | Disconnect from the current channel
 🔊 - volume [0-1000]    | Change the output volume
 ⏯ - pr                                | Toggle between paused and playing
 ⏹ - stop                            | Stop the current track and disconnect
@@ -33,7 +33,7 @@ class music(commands.Cog):
         self.client = client
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
+    async def on_voice_state_update(self, after):
         voice = after.channel.guild.voice_client
         time = 0
         while True:
@@ -163,7 +163,7 @@ class music(commands.Cog):
     @commands.command()
     async def loop(self, ctx):
         if ctx.voice_client is None:
-            await ctx.send("Not connected to a voice channel.")
+            await ctx.send("I'm not in a voice channel")
         else:
             await set_loop(ctx)
 
@@ -173,7 +173,7 @@ class music(commands.Cog):
         if user == 320505702919700483:
             exit(0)
         else:
-            await ctx.send("kk tu nao eh o adm 🤏🤏🥺")
+            await ctx.send("kk tu nao eh o ademir 🥵🥵🥵")
 
 
 def setup(client):
@@ -184,34 +184,45 @@ async def play(self, ctx: commands.Context, data, stream=False):
     global paused
     global is_loop
 
-    async def loop_play():
-        while is_loop:
-            player = YTDLSource.init_player(data)
-            ctx.voice_client.play(player)
-
-            while ctx.voice_client.is_playing() or paused:
-                await asyncio.sleep(1)
-
-    async def player():
+    # Play the music infinitely if is_loop is True
+    async def player2():
         player = YTDLSource.init_player(data)
-        ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-        await ctx.send(f'Now playing: {player.title}')
+        while True:
+            if not is_loop:
+                await ctx.send(f'Now playing: {player.title}')
+            await ctx.voice_clien.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 
-        while ctx.voice_client.is_playing() or paused:
-            await asyncio.sleep(1)
+            if not is_loop:
+                break
 
-    if is_loop:
-        await loop_play()
-    else:
-        await player()
+    # async def loop_play():
+    #     while is_loop:
+    #         player = YTDLSource.init_player(data)
+    #         ctx.voice_client.play(player)
+    #
+    #         while ctx.voice_client.is_playing() or paused:
+    #             await asyncio.sleep(1)
+    #
+    # async def player():
+    #     player = YTDLSource.init_player(data)
+    #     ctx.voice_clien.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
+    #     await ctx.send(f'Now playing: {player.title}')
+    #
+    #     while ctx.voice_client.is_playing() or paused:
+    #         await asyncio.sleep(1)
+    #
+    # if is_loop:
+    #     await loop_play()
+    # else:
+    #     await player()
+    await player2()
 
     await iter_musics(self, ctx)
 
 
 async def iter_musics(self, ctx):
     musics.pop(0)
-
-    if len(musics) != 0:
+    if ctx.voice_client is not None and len(musics) != 0:
         await play(self, ctx, musics[0])
     else:
         await ctx.send("The playlist is empty")
