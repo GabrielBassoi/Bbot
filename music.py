@@ -76,11 +76,13 @@ class music(commands.Cog):
         data = await YTDLSource.get_info(text)
         musics.append(data)
 
-        if not ctx.voice_client.is_playing() and len(musics) >= 1:
+        if not ctx.voice_client.is_playing() and len(musics) > 1:
             await ctx.send(f'{data.get("title")} | Added to the list!')
             await play(self, ctx, musics[0])
         elif not ctx.voice_client.is_playing and len(musics) == 1:
             await play(self, ctx, musics[0])
+        else:
+            await ctx.send(f'{data.get("title")} | Added to the list!')
 
 
     @commands.command()
