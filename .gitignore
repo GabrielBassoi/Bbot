@@ -3,4 +3,6 @@ test.netrc
 Lib/
 Scripts/
 share/
+ffmpeg-4.4-essentials_build/
 token.txt
+pyvenv.cfg
