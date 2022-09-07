@@ -1,9 +1,9 @@
 __pycache__/
-test.netrc
 Lib/
 Scripts/
 share/
-.idea/
 ffmpeg-4.4-essentials_build/
+
+test.netrc
 token.txt
 pyvenv.cfg
