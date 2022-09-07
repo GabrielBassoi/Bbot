@@ -10,4 +10,4 @@ client = commands.Bot(command_prefix='-', intents = discord.Intents.all())
 for i in range(len(cogs)):
     cogs[i].setup(client)
 
-client.run('ODg3MDgzNTE1NzEwMTYwOTE3.YT--5w.FSDobIS2mpXem8C2-Os07a6_tIc')
+client.run('Put your token here')
