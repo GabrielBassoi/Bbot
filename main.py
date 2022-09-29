@@ -3,6 +3,7 @@ from discord.ext import commands
 import music as music
 import ffmpeg
 from boto.s3.connection import S3Connection
+import os
 
 cogs = [music]
 
@@ -13,6 +14,7 @@ token = ''
 for i in range(len(cogs)):
     cogs[i].setup(client)
 
+token = S3Connection()
 token = S3Connection(os.environ['TOKEN'])
 
 client.run(token)
