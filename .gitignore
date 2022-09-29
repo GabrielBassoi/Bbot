@@ -6,5 +6,4 @@ ffmpeg-4.4-essentials_build/
 .idea/
 
 test.netrc
-token.txt
 pyvenv.cfg

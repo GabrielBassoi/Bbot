@@ -4,3 +4,4 @@ yt-dlp
 validators
 youtube-search
 PyNaCl
+boto
