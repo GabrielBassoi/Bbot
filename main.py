@@ -7,7 +7,12 @@ cogs = [music]
 
 client = commands.Bot(command_prefix='-', intents = discord.Intents.all())
 
+token = ''
+
 for i in range(len(cogs)):
     cogs[i].setup(client)
 
-client.run('Put your token here')
+with open('token.txt', 'r') as f:
+    token = f.read()
+
+client.run(token)
