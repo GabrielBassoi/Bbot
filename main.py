@@ -14,7 +14,7 @@ token = ''
 for i in range(len(cogs)):
     cogs[i].setup(client)
 
-token = S3Connection()
-token = S3Connection(os.environ['TOKEN'])
+# token = S3Connection()
+# token = S3Connection(os.environ['TOKEN'])
 
-client.run(token)
+client.run("ODg3MDgzNTE1NzEwMTYwOTE3.GfldtX.kQJahtO3herowCDXLkf_CFutzBhiCp6JembFKDvl_Y")
