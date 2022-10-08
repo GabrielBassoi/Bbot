@@ -17,4 +17,4 @@ for i in range(len(cogs)):
 # token = S3Connection()
 # token = S3Connection(os.environ['TOKEN'])
 
-client.run("ODg3MDgzNTE1NzEwMTYwOTE3.GfldtX.kQJahtO3herowCDXLkf_CFutzBhiCp6JembFKDvl_Y")
+client.run("ODg3MDgzNTE1NzEwMTYwOTE3.GFwrKk.rShcrrIQUW1ZBuxVS_XhYL90ThlvAIib81s0FY")
