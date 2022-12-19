@@ -9,7 +9,7 @@
 
 ### Atention!!! The old token is not working anymore, so dont try to steel it :D it wont work.
 
-### This project is made to run on Heroku
+
 
 ### This project is licensed under the MIT License
 ### See LICENSE for more information
