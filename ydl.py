@@ -71,4 +71,5 @@ class YTDLSource(discord.PCMVolumeTransformer):
         except:
             print("Ocorreu um erro")
 
-'''executable=ffmpegPath,''' # With in pc put on return cls(... , with send to heroku remove
+
+''''''  # Insert this code whem running in PC inside cls(... , if send to heroku remove

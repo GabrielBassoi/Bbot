@@ -1,230 +1,103 @@
-import asyncio
-import datetime
-
-from ydl import YTDLSource
-
-import discord
-from discord.ext.commands import bot
 from discord.ext import commands
+import commands as cmd
 
-musics: list = []
-
-help_text = '''
-Bot commands:
-
-🎶 - p [url/name]            | Play the music/video
-😁 - join                              | Join in the current channel
-😥 - disconnect                | Disconnect from the current channel
-🔊 - volume [0-1000]    | Change the output volume
-⏯ - pr                                | Toggle between paused and playing
-⏹ - stop                            | Stop the current track and disconnect
-📃 - list                              | Show the playlist
-⏩ - skip                            | Play the next music/video
-♾ - loop                            | L∞P
-😎 - festourado                | FOOOOOOOOOOOOOOOORGET
-'''
-
-is_loop = False
-paused = False
+not_in_channel_text = "I'm not in a voice channel"
+user_not_in_channel_text = "You're not in a voice channel"
 
 
-class music(commands.Cog):
+class Music(commands.Cog):
     def __init__(self, client):
         self.client = client
-
-    # Returning some error but it's working
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        voice = after.channel.guild.voice_client
-        time = 0
-        while True:
-            await asyncio.sleep(1)
-            time = time + 1
-            if voice is not None or voice.is_playing() and not voice.is_paused():
-                time = 0
-            if time == 300:
-                await voice.disconnect()
-            if not voice.is_connected():
-                break
+        self.commands = cmd.Commands()
 
     @commands.command()
     async def join(self, ctx):
         if ctx.author.voice is None:
-            await ctx.send("You're not in a voice channel!")
-
-        voice_channel = ctx.author.voice.channel
-
-        if ctx.voice_client is None:
-            await voice_channel.connect()
-            if musics != 0:
-                await play(self, ctx, musics[0])
+            await ctx.send(user_not_in_channel_text)
         else:
-            await ctx.voice_client.move_to(voice_channel)
+            await self.commands.join(self, ctx)
 
     @commands.command()
     async def disconnect(self, ctx):
         if ctx.voice_client is None:
-            await ctx.send("I'm not in a voice channel")
+            await ctx.send(not_in_channel_text)
         else:
-            ctx.voice_client.stop()
-            await ctx.voice_client.disconnect()
+            await self.commands.disconnect(self, ctx)
 
     @commands.command()
     async def p(self, ctx: commands.Context, *, text):
         if ctx.voice_client is None:
             await ctx.author.voice.channel.connect()
 
-        data = await YTDLSource.get_info(text)
-        musics.append(data)
+        await self.commands.play_music(self, ctx, text)
 
-        if not ctx.voice_client.is_playing() and len(musics) > 1:
-            await ctx.send(f'{data.get("title")} | Added to the list!')
-            await play(self, ctx, musics[0])
-        elif not ctx.voice_client.is_playing() and len(musics) == 1:
-            await play(self, ctx, musics[0])
-        else:
-            await ctx.send(f'{data.get("title")} | Added to the list!')
+    @commands.command()
+    async def unf(self, ctx):
+        if ctx.voice_client is None:
+            await ctx.author.voice.channel.connect()
+
+        await self.commands.play_music(self, ctx, "https://www.youtube.com/watch?v=oWTZTCl_QW8")
 
     @commands.command()
     async def pr(self, ctx):
-        global paused
         if ctx.voice_client is None:
-            await ctx.send("I'm not in a voice channel!")
+            return await ctx.send(not_in_channel_text)
         else:
-            if ctx.voice_client.is_playing() and len(musics) != 0:
-                paused = True
-                ctx.voice_client.pause()
-                await ctx.send("Paused ⏸")
-            elif not ctx.voice_client.is_playing() and len(musics) != 0:
-                paused = False
-                ctx.voice_client.resume()
-                await ctx.send("Resume ▶")
-            else:
-                await ctx.send("There's no music playing ;(")
+            await self.commands.pause_resume(self, ctx)
 
     @commands.command()
     async def volume(self, ctx, volume: int = 50):
         if ctx.voice_client is None:
-            return await ctx.send("I'm not in a voice channel!")
+            return await ctx.send(not_in_channel_text)
         else:
-            if ctx.voice_client.is_playing() and len(musics) != 0:
-                ctx.voice_client.source.volume = volume / 100
-                await ctx.send(f'Changed volume to {volume}%')
-            else:
-                await ctx.send("There's no music playing ;(")
+            await self.commands.change_volume(self, ctx, volume)
 
     @commands.command()
     async def stop(self, ctx):
         if ctx.voice_client is None:
-            await ctx.send("I'm not in a voice channel")
+            await ctx.send(not_in_channel_text)
         else:
-            musics.clear()
-            ctx.voice_client.stop()
-            await ctx.voice_client.disconnect()
+            await self.commands.stop(self, ctx)
 
     @commands.command()
     async def h(self, ctx):
-        await ctx.send(help_text)
+        await self.commands.help(self, ctx)
 
     @commands.command()
     async def list(self, ctx):
         if ctx.voice_client is None:
-            ctx.send("I'm not in a voice channel")
+            await ctx.send(not_in_channel_text)
         else:
-            if len(musics) != 0:
-                text = "Playlist:\n"
-                for n in range(len(musics)):
-                    text += f'{n} | {musics[n].get("title")} | {format_duration(musics[n].get("duration"))}\n'
-                await ctx.send(text)
-            else:
-                await ctx.send("The playlist is empty")
+            await self.commands.show_list(self, ctx)
 
     @commands.command()
     async def skip(self, ctx):
-        global is_loop
         if ctx.voice_client is None:
-            ctx.send("I'm not in a voice channel")
+            await ctx.send(not_in_channel_text)
         else:
-            if len(musics) > 1:
-                is_loop = False
-                await ctx.send("Loop is False")
-                ctx.voice_client.stop()
-            else:
-                await ctx.send("The playlist is empty")
+            await self.commands.skip_music(self, ctx)
 
     @commands.command()
     async def festourado(self, ctx):
         if ctx.voice_client is None:
-            await ctx.send("Not connected to a voice channel.")
+            return await ctx.send(not_in_channel_text)
         else:
-            if ctx.voice_client.is_playing() and len(musics) != 0:
-                ctx.voice_client.source.volume = 10000 / 100
-                await ctx.send(f'Forget estourado 🤏😎🤏😎')
-            else:
-                await ctx.send("There's no music playing ;(")
+            await self.commands.festourado(self, ctx)
 
     @commands.command()
     async def loop(self, ctx):
         if ctx.voice_client is None:
-            await ctx.send("I'm not in a voice channel")
+            await ctx.send(not_in_channel_text)
         else:
-            await set_loop(ctx)
+            await self.commands.loop(self, ctx)
 
     @commands.command()
     async def exit(self, ctx):
-        user = ctx.author.id
-        if user == 320505702919700483:
-            exit(0)
+        if ctx.voice_client is None:
+            await ctx.send(not_in_channel_text)
         else:
-            await ctx.send("kk tu nao eh o ademir 🥵🥵🥵")
+            await self.commands.exit(self, ctx)
 
 
-def setup(client):
-    client.add_cog(music(client))
-
-
-async def play(self, ctx: commands.Context, data, stream=False):
-    global paused
-    global is_loop
-
-    # Play the music infinitely if is_loop is True
-    async def player():
-        while True:
-            player = YTDLSource.init_player(data)
-            if not is_loop:
-                await ctx.send(f'Now playing: {player.title}')
-            ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
-            while ctx.voice_client.is_playing() or paused:
-                await asyncio.sleep(1)
-            if not is_loop:
-                break
-
-    await player()
-
-    await iter_musics(self, ctx)
-
-
-async def iter_musics(self, ctx):
-    musics.pop(0)
-    if ctx.voice_client is not None and len(musics) != 0:
-        await play(self, ctx, musics[0])
-    else:
-        await ctx.send("The playlist is empty")
-
-
-async def set_loop(ctx):
-    global is_loop
-    if is_loop:
-        is_loop = False
-    else:
-        is_loop = True
-
-    await ctx.send(f"Loop is {is_loop}")
-
-
-def format_duration(seconds):
-    time = str(datetime.timedelta(seconds=seconds))
-    l = time.split(":")
-    if l[0] != "0":
-        return f"{l[0]}:{l[1]}:{l[2]}"
-    return f"{l[1]}:{l[2]}"
+async def setup(client):
+    await client.add_cog(Music(client))
